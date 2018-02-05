@@ -35,9 +35,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 
 // K is a constant such that the accumulated error of our floating-point computations is definitely bounded by K units in the last place.
 #ifdef CGFLOAT_IS_DOUBLE
-    static const CGFloat kK = 9;
+static const CGFloat kK = 9;
 #else
-    static const CGFloat kK = 0;
+static const CGFloat kK = 0;
 #endif
 
 @interface RSKImageCropViewController () <UIGestureRecognizerDelegate>
@@ -140,7 +140,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         self.automaticallyAdjustsScrollViewInsets = NO;
     }
     
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = [UIColor whiteColor];
     self.view.clipsToBounds = YES;
     
     [self.view addSubview:self.imageScrollView];
@@ -175,7 +175,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     [super viewDidAppear:animated];
     
     self.originalNavigationControllerViewBackgroundColor = self.navigationController.view.backgroundColor;
-    self.navigationController.view.backgroundColor = [UIColor blackColor];
+    self.navigationController.view.backgroundColor = [UIColor whiteColor];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -321,7 +321,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 - (UIColor *)maskLayerColor
 {
     if (!_maskLayerColor) {
-        _maskLayerColor = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:0.7f];
+        _maskLayerColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:0.5f];
     }
     return _maskLayerColor;
 }
@@ -774,11 +774,8 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
             CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
             
             CGFloat diameter;
-            if ([self isPortraitInterfaceOrientation]) {
-                diameter = MIN(viewWidth, viewHeight) - self.portraitCircleMaskRectInnerEdgeInset * 2;
-            } else {
-                diameter = MIN(viewWidth, viewHeight) - self.landscapeCircleMaskRectInnerEdgeInset * 2;
-            }
+
+            diameter = 146;
             
             CGSize maskSize = CGSizeMake(diameter, diameter);
             
@@ -793,11 +790,8 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
             CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
             
             CGFloat length;
-            if ([self isPortraitInterfaceOrientation]) {
-                length = MIN(viewWidth, viewHeight) - self.portraitSquareMaskRectInnerEdgeInset * 2;
-            } else {
-                length = MIN(viewWidth, viewHeight) - self.landscapeSquareMaskRectInnerEdgeInset * 2;
-            }
+
+            length = 146;
             
             CGSize maskSize = CGSizeMake(length, length);
             
@@ -877,7 +871,6 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     
     CGFloat imageScale = image.scale;
     cropRect = CGRectApplyAffineTransform(cropRect, CGAffineTransformMakeScale(imageScale, imageScale));
-    
     // Step 2: create an image using the data contained within the specified rect.
     UIImage *croppedImage = [self croppedImage:image cropRect:cropRect scale:imageScale orientation:imageOrientation];
     
@@ -892,48 +885,47 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     if ((cropMode == RSKImageCropModeSquare || !applyMaskToCroppedImage) && rotationAngle == 0.0) {
         // Step 5: return the cropped image immediately.
         return croppedImage;
-    } else {
-        // Step 5: create a new context.
-        CGSize contextSize = cropRect.size;
-        UIGraphicsBeginImageContextWithOptions(contextSize, NO, imageScale);
-        
-        // Step 6: apply the mask if needed.
-        if (applyMaskToCroppedImage) {
-            // 6a: scale the mask to the size of the crop rect.
-            UIBezierPath *maskPathCopy = [maskPath copy];
-            CGFloat scale = 1.0 / zoomScale;
-            [maskPathCopy applyTransform:CGAffineTransformMakeScale(scale, scale)];
-            
-            // 6b: move the mask to the top-left.
-            CGPoint translation = CGPointMake(-CGRectGetMinX(maskPathCopy.bounds),
-                                              -CGRectGetMinY(maskPathCopy.bounds));
-            [maskPathCopy applyTransform:CGAffineTransformMakeTranslation(translation.x, translation.y)];
-            
-            // 6c: apply the mask.
-            [maskPathCopy addClip];
-        }
-        
-        // Step 7: rotate the cropped image if needed.
-        if (rotationAngle != 0) {
-            croppedImage = [croppedImage rotateByAngle:rotationAngle];
-        }
-        
-        // Step 8: draw the cropped image.
-        CGPoint point = CGPointMake(floor((contextSize.width - croppedImage.size.width) * 0.5f),
-                                    floor((contextSize.height - croppedImage.size.height) * 0.5f));
-        [croppedImage drawAtPoint:point];
-        
-        // Step 9: get the cropped image affter processing from the context.
-        croppedImage = UIGraphicsGetImageFromCurrentImageContext();
-        
-        // Step 10: remove the context.
-        UIGraphicsEndImageContext();
-        
-        croppedImage = [UIImage imageWithCGImage:croppedImage.CGImage scale:imageScale orientation:imageOrientation];
-        
-        // Step 11: return the cropped image affter processing.
-        return croppedImage;
     }
+    
+    // Step 5: apply the mask if needed.
+    // 5a: scale the mask to the size of the crop rect.
+    UIBezierPath *maskPathCopy = [maskPath copy];
+    CGFloat scale = 1.0 / zoomScale;
+    [maskPathCopy applyTransform:CGAffineTransformMakeScale(scale, scale)];
+    
+    // 5b: move the mask to the top-left.
+    CGPoint translation = CGPointMake(-(CGRectGetMinX(maskPathCopy.bounds)),
+                                      -(CGRectGetMinY(maskPathCopy.bounds)));
+    [maskPathCopy applyTransform:CGAffineTransformMakeTranslation(translation.x, translation.y)];
+    
+    // 5c: apply the mask.
+    [maskPathCopy addClip];
+    
+    // Step 6: create a new context.
+    CGSize maskSize = maskPathCopy.bounds.size;
+    CGSize contextSize = maskSize;
+    UIGraphicsBeginImageContextWithOptions(contextSize, NO, imageScale);
+    
+    // Step 7: rotate the cropped image if needed.
+    if (rotationAngle != 0) {
+        croppedImage = [croppedImage rotateByAngle:rotationAngle];
+    }
+    // Step 8: draw the cropped image.
+    CGPoint point = CGPointMake(floor((maskSize.width - croppedImage.size.width) * 0.5f),
+                                floor((maskSize.height - croppedImage.size.height) * 0.5f));
+    [croppedImage drawAtPoint:point];
+    
+    // Step 9: get the cropped image affter processing from the context.
+    croppedImage = UIGraphicsGetImageFromCurrentImageContext();
+    
+    // Step 10: remove the context.
+    UIGraphicsEndImageContext();
+    
+    croppedImage = [UIImage imageWithCGImage:croppedImage.CGImage scale:imageScale orientation:imageOrientation];
+    
+    // Step 11: return the cropped image affter processing.
+    return croppedImage;
+    
 }
 
 - (void)cropImage
@@ -975,3 +967,4 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 }
 
 @end
+

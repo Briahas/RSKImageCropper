@@ -1,7 +1,7 @@
 /*
-     File: RSKImageScrollView.m
+ File: RSKImageScrollView.m
  Abstract: Centers image within the scroll view and configures image sizing and display.
-  Version: 1.3 modified by Ruslan Skorb on 8/24/14.
+ Version: 1.3 modified by Ruslan Skorb on 8/24/14.
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
@@ -54,7 +54,7 @@
 @interface RSKImageScrollView () <UIScrollViewDelegate>
 {
     CGSize _imageSize;
-
+    
     CGPoint _pointToCenterAfterResize;
     CGFloat _scaleToRestoreAfterResize;
 }
@@ -194,7 +194,7 @@
 - (void)configureForImageSize:(CGSize)imageSize
 {
     _imageSize = imageSize;
-    self.contentSize = imageSize;
+    self.contentSize = _imageSize;
     [self setMaxMinZoomScalesForCurrentBounds];
     [self setInitialZoomScale];
     [self setInitialContentOffset];
@@ -211,9 +211,9 @@
     
     CGFloat minScale;
     if (!self.aspectFill) {
-        minScale = MIN(xScale, yScale); // use minimum of these to allow the image to become fully visible
+        minScale = MIN(xScale, yScale) / 2; // use minimum of these to allow the image to become fully visible
     } else {
-        minScale = MAX(xScale, yScale); // use maximum of these to allow the image to fill the screen
+        minScale = MAX(xScale, yScale) / 2; // use maximum of these to allow the image to fill the screen
     }
     
     CGFloat maxScale = MAX(xScale, yScale);
@@ -231,7 +231,7 @@
     if (minScale > maxScale) {
         minScale = maxScale;
     }
-        
+    
     self.maximumZoomScale = maxScale;
     self.minimumZoomScale = minScale;
 }
@@ -278,8 +278,9 @@
     
     CGPoint boundsCenter = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
     _pointToCenterAfterResize = [self convertPoint:boundsCenter toView:self.zoomView];
-
+    
     _scaleToRestoreAfterResize = self.zoomScale;
+    
     
     // If we're at the minimum zoom scale, preserve that by returning 0, which will be converted to the minimum
     // allowable scale when the scale is restored.
@@ -303,11 +304,11 @@
     
     // 2a: convert our desired center point back to our own coordinate space
     CGPoint boundsCenter = [self convertPoint:_pointToCenterAfterResize fromView:self.zoomView];
-
+    
     // 2b: calculate the content offset that would yield that center point
     CGPoint offset = CGPointMake(boundsCenter.x - self.bounds.size.width / 2.0,
                                  boundsCenter.y - self.bounds.size.height / 2.0);
-
+    
     // 2c: restore offset, adjusted to be within the allowable range
     CGPoint maxOffset = [self maximumContentOffset];
     CGPoint minOffset = [self minimumContentOffset];
@@ -334,3 +335,4 @@
 }
 
 @end
+
