@@ -793,7 +793,6 @@ static const CGFloat kK = 0;
             CGFloat viewWidth = CGRectGetWidth(self.view.bounds);
             CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
             
-            CGFloat length;
             self.maskRect = CGRectMake((viewWidth - self.maskSize.width) * 0.5f,
                                        (viewHeight - self.maskSize.height) * 0.5f,
                                        self.maskSize.width,
@@ -942,13 +941,40 @@ static const CGFloat kK = 0;
     BOOL applyMaskToCroppedImage = self.applyMaskToCroppedImage;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
-        UIImage *croppedImage = [self croppedImage:originalImage cropMode:cropMode cropRect:cropRect rotationAngle:rotationAngle zoomScale:zoomScale maskPath:maskPath applyMaskToCroppedImage:applyMaskToCroppedImage];
-        
+        UIImage *croppedImage;
+        if ((cropMode == RSKImageCropModeCustom || cropMode == RSKImageCropModeSquare) && rotationAngle!=0) {
+            croppedImage = [self renderedView];
+        } else {
+            croppedImage = [self croppedImage:originalImage cropMode:cropMode cropRect:cropRect rotationAngle:rotationAngle zoomScale:zoomScale maskPath:maskPath applyMaskToCroppedImage:applyMaskToCroppedImage];
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.delegate imageCropViewController:self didCropImage:croppedImage usingCropRect:cropRect rotationAngle:rotationAngle];
         });
     });
+}
+
+- (UIImage*)renderedView
+{
+    self.view.backgroundColor = [UIColor whiteColor];
+    UIImage *theImage = [self drawView:self.view area:CGRectInset(self.maskRect, 2, 2) scale:MAX(1, 1/self.zoomScale)];
+    return theImage;
+}
+
+- (UIImage *) drawView:(UIView *)view area:(CGRect)area scale:(CGFloat)scale
+{
+    UIGraphicsBeginImageContextWithOptions(area.size, view.opaque, scale);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    CGContextTranslateCTM(context, -area.origin.x, -area.origin.y);
+    CGContextSetFillColorWithColor(context, [[UIColor whiteColor] CGColor]);
+    CGContextFillRect(context, CGRectMake(0, 0, area.size.width, area.size.height));
+    
+    [view.layer renderInContext:context];
+    
+    UIImage * img = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return img;
 }
 
 - (void)cancelCrop
@@ -966,3 +992,4 @@ static const CGFloat kK = 0;
 }
 
 @end
+
