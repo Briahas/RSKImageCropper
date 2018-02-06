@@ -435,9 +435,17 @@ static const CGFloat kK = 0;
 
 - (CGFloat)rotationAngle
 {
-    CGAffineTransform transform = self.imageScrollView.transform;
-    CGFloat rotationAngle = atan2(transform.b, transform.a);
-    return rotationAngle;
+    [UIView beginAnimations:@"rsk_reset" context:NULL];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    [UIView setAnimationDuration:kResetAnimationDuration];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    
+    if (self.rotationAngle != rotationAngle) {
+        CGFloat rotation = (rotationAngle - self.rotationAngle);
+        CGAffineTransform transform = CGAffineTransformRotate(self.imageScrollView.transform, rotation);
+        self.imageScrollView.transform = transform;
+    }
+    [UIView commitAnimations];
 }
 
 - (CGFloat)zoomScale
