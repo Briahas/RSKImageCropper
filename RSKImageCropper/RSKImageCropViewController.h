@@ -107,7 +107,7 @@ typedef NS_ENUM(NSUInteger, RSKImageCropMode) {
  @discussion Updating each time before the crop view lays out its subviews.
  */
 @property (assign, readonly, nonatomic) CGRect maskRect;
-
+@property (assign, nonatomic) CGSize maskSize;
 /**
  The path of the mask.
  

@@ -140,7 +140,7 @@ static const CGFloat kK = 0;
         self.automaticallyAdjustsScrollViewInsets = NO;
     }
     
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.view.backgroundColor = [UIColor whiteColor];//blackColor]; //RRR
     self.view.clipsToBounds = YES;
     
     [self.view addSubview:self.imageScrollView];
@@ -175,7 +175,7 @@ static const CGFloat kK = 0;
     [super viewDidAppear:animated];
     
     self.originalNavigationControllerViewBackgroundColor = self.navigationController.view.backgroundColor;
-    self.navigationController.view.backgroundColor = [UIColor whiteColor];
+    self.navigationController.view.backgroundColor = [UIColor whiteColor];//blackColor]; //RRR
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -435,17 +435,9 @@ static const CGFloat kK = 0;
 
 - (CGFloat)rotationAngle
 {
-    [UIView beginAnimations:@"rsk_reset" context:NULL];
-    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-    [UIView setAnimationDuration:kResetAnimationDuration];
-    [UIView setAnimationBeginsFromCurrentState:YES];
-    
-    if (self.rotationAngle != rotationAngle) {
-        CGFloat rotation = (rotationAngle - self.rotationAngle);
-        CGAffineTransform transform = CGAffineTransformRotate(self.imageScrollView.transform, rotation);
-        self.imageScrollView.transform = transform;
-    }
-    [UIView commitAnimations];
+    CGAffineTransform transform = self.imageScrollView.transform;
+    CGFloat rotationAngle = atan2(transform.b, transform.a);
+    return rotationAngle;
 }
 
 - (CGFloat)zoomScale
@@ -521,11 +513,17 @@ static const CGFloat kK = 0;
 
 - (void)setRotationAngle:(CGFloat)rotationAngle
 {
+    [UIView beginAnimations:@"rsk_reset" context:NULL];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    [UIView setAnimationDuration:kResetAnimationDuration];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    
     if (self.rotationAngle != rotationAngle) {
         CGFloat rotation = (rotationAngle - self.rotationAngle);
         CGAffineTransform transform = CGAffineTransformRotate(self.imageScrollView.transform, rotation);
         self.imageScrollView.transform = transform;
     }
+    [UIView commitAnimations];
 }
 
 - (void)setRotationEnabled:(BOOL)rotationEnabled
@@ -782,9 +780,7 @@ static const CGFloat kK = 0;
             CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
             
             CGFloat diameter;
-
             diameter = 146;
-            
             CGSize maskSize = CGSizeMake(diameter, diameter);
             
             self.maskRect = CGRectMake((viewWidth - maskSize.width) * 0.5f,
@@ -798,15 +794,10 @@ static const CGFloat kK = 0;
             CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
             
             CGFloat length;
-
-            length = 146;
-            
-            CGSize maskSize = CGSizeMake(length, length);
-            
-            self.maskRect = CGRectMake((viewWidth - maskSize.width) * 0.5f,
-                                       (viewHeight - maskSize.height) * 0.5f,
-                                       maskSize.width,
-                                       maskSize.height);
+            self.maskRect = CGRectMake((viewWidth - self.maskSize.width) * 0.5f,
+                                       (viewHeight - self.maskSize.height) * 0.5f,
+                                       self.maskSize.width,
+                                       self.maskSize.height);
             break;
         }
         case RSKImageCropModeCustom: {
@@ -975,4 +966,3 @@ static const CGFloat kK = 0;
 }
 
 @end
-
