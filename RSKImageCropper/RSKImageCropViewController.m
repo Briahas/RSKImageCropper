@@ -792,10 +792,10 @@ static const CGFloat kK = 0;
         case RSKImageCropModeSquare: {
             CGFloat viewWidth = CGRectGetWidth(self.view.bounds);
             CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
-            
-            self.maskRect = CGRectMake((viewWidth - self.maskSize.width) * 0.5f,
+          
+            self.maskRect = CGRectMake(0,
                                        (viewHeight - self.maskSize.height) * 0.5f,
-                                       self.maskSize.width,
+                                       viewWidth,
                                        self.maskSize.height);
             break;
         }
